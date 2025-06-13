@@ -1,0 +1,127 @@
+﻿# ChatFlow - Full End-to-End Architecture Flow
+
+
+https://mernchatapp.netlify.app/login
+
+
+
+ 1) USER REGISTRATION FLOW
+
+
+- User fills out the registration form in React frontend.
+- Frontend makes an HTTP POST request to: /auth/register on the backend API.
+- Backend (Express Controller):
+  - Validates request payload (username, email, password).
+  - Hashes the password using bcrypt.
+  - Stores new user records in MongoDB Atlas using Mongoose ORM.
+- Backend responds with HTTP 201 Created.
+- Frontend shows a success message and redirects to the login page.
+
+
+
+
+ 2) USER LOGIN FLOW (AUTHENTICATION)
+
+
+- User submits login form (email/password).
+- Frontend sends HTTP POST request to: /auth/login on backend API.
+- Backend (Login Controller):
+  - Fetches user record by email from MongoDB Atlas.
+  - Compares hashed password with bcrypt.
+  - If valid, backend generates JWT token (stateless auth).
+  - JWT token contains user ID encoded as payload.
+  - Backend responds with JSON: { token: <jwt_token> }
+- Frontend stores token securely (localStorage/sessionStorage).
+- Frontend uses token for subsequent API requests.
+
+
+
+
+3) TOKEN-BASED USER SESSION FLOW
+
+
+- On every protected API call, frontend sends Authorization header:
+  Authorization: Bearer <jwt_token>
+- Backend middleware verifies token using JWT_SECRET.
+- Decodes token and retrieves user ID for authorization.
+
+
+
+
+ 4) CONVERSATION LISTING FLOW
+
+
+- Frontend fetches user conversations by calling:
+  GET /conversations
+- Backend extracts user ID from verified JWT token.
+- MongoDB queried for all conversations where user is participant.
+- Returns conversation list to frontend for rendering.
+
+
+
+
+ 5) USERS LIST FLOW (To Initiate Chat)
+
+
+- Frontend calls GET /users to fetch other users.
+- Backend fetches all users except current user (decoded via JWT token).
+- Returns user list to frontend to show "Start Conversation" option.
+
+
+
+
+ 6) CREATE NEW CONVERSATION FLOW
+
+
+- User selects another user to chat with.
+- Frontend sends POST /conversations { participants: [user1, user2] }
+- Backend creates new conversation document in MongoDB.
+- Conversation ID returned to frontend.
+
+
+
+
+ 7) MESSAGE EXCHANGE FLOW (REAL-TIME CHAT)
+
+
+
+
+- Frontend opens WebSocket connection using Socket.io client.
+- Backend (Socket.io server) establishes room per conversation ID.
+
+
+- When sending message:
+  - Frontend sends POST /conversations/:id/messages with message payload.
+  - Backend saves message to MongoDB.
+  - Backend emits new message event using Socket.io to room subscribers.
+
+
+- When receiving message:
+  - Frontend Socket.io client listens for 'newMessage' event.
+  - Updates chat window in real-time.
+
+
+
+
+ 8) LOGOUT FLOW
+
+
+- User clicks logout button.
+- Frontend clears JWT token from localStorage.
+- Redirects user back to /login page.
+- No backend interaction needed since JWT is stateless.
+
+
+===========================================
+
+
+
+
+# Technology Stack Summary:
+
+
+- Frontend: React, Axios, React Router, Bootstrap, Toastify
+- Frontend Hosting: Netlify
+- Backend: Node.js, Express, Socket.io, JWT, bcrypt, Mongoose
+- Backend Hosting: Render
+- Database: MongoDB Atlas (Cloud)
