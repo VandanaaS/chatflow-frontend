@@ -42,6 +42,8 @@ npm start
 
 ## Demo Flow
 
+- Open the production Url at: https://mernchatapp.netlify.app/login
+
 - Register at `/register`
 - Login at `/login`
 - Chat in `/`
